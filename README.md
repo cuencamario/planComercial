@@ -1,2 +1,126 @@
 # planComercial
-plancomercial
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elige tu cross y genera PDF</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 10px; margin: 0; }
+    h1 { font-size: 18px; text-align: center; margin-bottom: 10px; }
+    #inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .item {
+      border: 1px solid #ccc;
+      padding: 8px;
+      transition: opacity 0.2s;
+    }
+    .item label { display: block; margin: 4px 0; font-size: 12px; }
+    .item select, .item input[type="text"], .item input[type="checkbox"] {
+      width: 100%; padding: 4px; font-size: 12px; box-sizing: border-box;
+    }
+    .preview-container { position: relative; margin-top: 6px; }
+    .preview-container img.preview { width: 100%; height: auto; border: 1px solid #ddd; }
+    .preview-container img.logo { position: absolute; width: 20px; top: 4px; left: 4px; pointer-events: none; }
+    button { display: block; margin: 15px auto; padding: 8px 16px; font-size: 14px; }
+    @media (max-width: 768px) { #inputs { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>Configura tus cross y genera PDF</h1>
+  <div id="inputs"></div>
+  <button id="btnGenerar">Crear PDF</button>
+
+  <script>
+    const tipos = ['Cross','Cabecera','Esfera o Exposicion Especial'];
+    const container = document.getElementById('inputs');
+    const bgUrl = 'https://www.carrefour.es/_includes/multimedia/es/logo-express-franquicias-inicio_20180820_tcm5-49264.png';
+    const logoUrl = bgUrl;
+    const defaultImageUrl = 'https://res.cloudinary.com/dylcexk0m/image/upload/v1750593766/Nombre1_wjs9n3.png';
+
+    // Crear bloques: checkbox, select, nombre y preview fija
+    for (let i = 1; i <= 10; i++) {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <label><input type="checkbox" class="includeItem" checked> Elemento ${i}</label>
+        <label>Tipo:<select class="plantilla">${tipos.map(t=>`<option>${t}</option>`).join('')}</select></label>
+        <label>Nombre:<input type="text" class="nombre" placeholder="Nombre"></label>
+        <div class="preview-container">
+          <img class="preview" src="${defaultImageUrl}" alt="Vista previa">
+          <img class="logo" src="${logoUrl}" alt="Logo">
+        </div>`;
+      container.appendChild(div);
+    }
+
+    // Toggle bloque y no hay cambios de imagen
+    container.querySelectorAll('.item').forEach(item => {
+      const chk = item.querySelector('.includeItem');
+      chk.addEventListener('change', () => item.style.opacity = chk.checked ? '1' : '0.3');
+    });
+
+    // Convertir URL a DataURL
+    async function toDataURL(url) {
+      const res = await fetch(url).catch(() => null);
+      if (!res) return null;
+      const blob = await res.blob();
+      return new Promise(res => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    document.getElementById('btnGenerar').addEventListener('click', async () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({unit:'pt',format:'letter'});
+      const allItems = Array.from(document.querySelectorAll('.item'));
+      const items = allItems.filter(it=> it.querySelector('.includeItem').checked);
+
+      const [bgData, logoData, defaultImgData] = await Promise.all([
+        toDataURL(bgUrl),
+        toDataURL(logoUrl),
+        toDataURL(defaultImageUrl)
+      ]);
+
+      const perPage = 6, cols = 3, rows = 2;
+      const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+      const bw = (pw - 80)/cols, bh = (ph - 100)/rows;
+
+      items.forEach((item, idx) => {
+        if (idx > 0 && idx % perPage === 0) doc.addPage();
+        if (idx % perPage === 0 && bgData) doc.addImage(bgData,'PNG', pw-100-40, 40, 100, 100);
+
+        const ip = idx % perPage;
+        const col = ip % cols;
+        const row = Math.floor(ip/cols);
+        const x = 40 + col*(bw+10);
+        const y0 = 60 + row*(bh+10);
+        let y = y0;
+
+        const tipo = item.querySelector('.plantilla').value;
+        const nombre = item.querySelector('.nombre').value || '(sin nombre)';
+        const imgData = defaultImgData;
+
+        doc.setFontSize(12);
+        doc.text(`#${idx+1} ${tipo}`, x, y);
+        y += 14;
+        doc.setFontSize(10);
+        doc.text(`Nombre: ${nombre}`, x, y);
+        y += 16;
+
+        if (imgData) {
+          const sz = Math.min(bw-20, bh-40);
+          doc.addImage(imgData, 'PNG', x, y, sz, sz);
+          if (logoData) {
+            const lsz = sz*0.2;
+            doc.addImage(logoData, 'PNG', x+5, y+5, lsz, lsz);
+          }
+        }
+      });
+
+      doc.save('mis_10_cross.pdf');
+    });
+  </script>
+</body>
+</html>

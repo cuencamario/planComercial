@@ -67,7 +67,7 @@ for(let i=1;i<=10;i++){
 function makePreviewBlock(n, nombre){
   const div=document.createElement('div');
   div.className='item';
-  div.innerHTML=`<h3 style="color:#0066cc; font-weight:bold; font-size:16px;">🎯 OFERTA TOP \${n}</h3>
+  div.innerHTML=`<h3 style="color:#0066cc; font-weight:bold; font-size:16px;">🎯 OFERTA TOP ${n}</h3>
      <label><input type="checkbox" class="includeItem" checked> Incluir</label>
      <label>Tipo:
        <select class="plantilla">${tipos.map(t=>`<option>${t}</option>`).join('')}</select></label>

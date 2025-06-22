@@ -9,11 +9,7 @@
     body { font-family: Arial, sans-serif; padding: 10px; margin: 0; }
     h1 { font-size: 18px; text-align: center; margin-bottom: 10px; }
     #inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .item {
-      border: 1px solid #ccc;
-      padding: 8px;
-      transition: opacity 0.2s;
-    }
+    .item { border: 1px solid #ccc; padding: 8px; transition: opacity 0.2s; }
     .item label { display: block; margin: 4px 0; font-size: 12px; }
     .item select, .item input[type="text"], .item input[type="checkbox"] {
       width: 100%; padding: 4px; font-size: 12px; box-sizing: border-box;
@@ -33,26 +29,32 @@
   <script>
     const tipos = ['Cross','Cabecera','Esfera o Exposicion Especial'];
     const container = document.getElementById('inputs');
-    const bgUrl = 'https://www.carrefour.es/_includes/multimedia/es/logo-express-franquicias-inicio_20180820_tcm5-49264.png';
-    const logoUrl = bgUrl;
-    const defaultImageUrl = 'https://res.cloudinary.com/dylcexk0m/image/upload/v1750593766/Nombre1_wjs9n3.png';
+    const imageBase = './';
+    const bgUrl = imageBase + 'logo-carrefour.png';
 
-    // Crear bloques: checkbox, select, nombre y preview fija
+    // Crear bloques predefinidos
     for (let i = 1; i <= 10; i++) {
+      const nombreDef = `nombre${i}`;
       const div = document.createElement('div');
       div.className = 'item';
       div.innerHTML = `
         <label><input type="checkbox" class="includeItem" checked> Elemento ${i}</label>
-        <label>Tipo:<select class="plantilla">${tipos.map(t=>`<option>${t}</option>`).join('')}</select></label>
-        <label>Nombre:<input type="text" class="nombre" placeholder="Nombre"></label>
+        <label>Tipo:
+          <select class="plantilla">
+            ${tipos.map(t => `<option>${t}</option>`).join('')}
+          </select>
+        </label>
+        <label>Nombre (sin extensión):
+          <input type="text" class="nombre" value="${nombreDef}">
+        </label>
         <div class="preview-container">
-          <img class="preview" src="${defaultImageUrl}" alt="Vista previa">
-          <img class="logo" src="${logoUrl}" alt="Logo">
+          <img class="preview" src="${imageBase}${nombreDef}.png" alt="Vista previa">
+          <img class="logo" src="${bgUrl}" alt="Logo">
         </div>`;
       container.appendChild(div);
     }
 
-    // Toggle bloque y no hay cambios de imagen
+    // Toggle bloque
     container.querySelectorAll('.item').forEach(item => {
       const chk = item.querySelector('.includeItem');
       chk.addEventListener('change', () => item.style.opacity = chk.checked ? '1' : '0.3');
@@ -74,17 +76,20 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({unit:'pt',format:'letter'});
       const allItems = Array.from(document.querySelectorAll('.item'));
-      const items = allItems.filter(it=> it.querySelector('.includeItem').checked);
+      const items = allItems.filter(it => it.querySelector('.includeItem').checked);
 
-      const [bgData, logoData, defaultImgData] = await Promise.all([
-        toDataURL(bgUrl),
-        toDataURL(logoUrl),
-        toDataURL(defaultImageUrl)
+      const [bgData, logoData] = await Promise.all([
+        toDataURL(bgUrl), toDataURL(bgUrl)
       ]);
+
+      const images = await Promise.all(items.map(it => {
+        const name = it.querySelector('.nombre').value.trim();
+        return toDataURL(name ? `${imageBase}${name}.png` : null);
+      }));
 
       const perPage = 6, cols = 3, rows = 2;
       const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
-      const bw = (pw - 80)/cols, bh = (ph - 100)/rows;
+      const bw = (pw - 80) / cols, bh = (ph - 100) / rows;
 
       items.forEach((item, idx) => {
         if (idx > 0 && idx % perPage === 0) doc.addPage();
@@ -92,14 +97,14 @@
 
         const ip = idx % perPage;
         const col = ip % cols;
-        const row = Math.floor(ip/cols);
-        const x = 40 + col*(bw+10);
-        const y0 = 60 + row*(bh+10);
+        const row = Math.floor(ip / cols);
+        const x = 40 + col * (bw + 10);
+        const y0 = 60 + row * (bh + 10);
         let y = y0;
 
         const tipo = item.querySelector('.plantilla').value;
         const nombre = item.querySelector('.nombre').value || '(sin nombre)';
-        const imgData = defaultImgData;
+        const imgData = images[idx];
 
         doc.setFontSize(12);
         doc.text(`#${idx+1} ${tipo}`, x, y);
@@ -109,11 +114,12 @@
         y += 16;
 
         if (imgData) {
-          const sz = Math.min(bw-20, bh-40);
-          doc.addImage(imgData, 'PNG', x, y, sz, sz);
+          const sz = Math.min(bw - 20, bh - 40);
+          const fmt = imgData.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+          doc.addImage(imgData, fmt, x, y, sz, sz);
           if (logoData) {
-            const lsz = sz*0.2;
-            doc.addImage(logoData, 'PNG', x+5, y+5, lsz, lsz);
+            const lsz = sz * 0.2;
+            doc.addImage(logoData, 'PNG', x + 5, y + 5, lsz, lsz);
           }
         }
       });

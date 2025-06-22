@@ -17,7 +17,6 @@
     }
     .preview-container { position: relative; margin-top: 6px; }
     .preview-container img.preview { width: 100%; height: auto; border: 1px solid #ddd; }
-    .preview-container img.logo { position: absolute; width: 20px; top: 4px; left: 4px; pointer-events: none; }
     button { display: block; margin: 15px auto; padding: 8px 16px; font-size: 14px; }
     @media (max-width: 768px) { #inputs { grid-template-columns: 1fr; } }
   </style>
@@ -30,10 +29,9 @@
   <script>
     const tipos = ['Cross','Cabecera','Esfera o Exposicion Especial'];
     const container = document.getElementById('inputs');
-    const imageBase = './';
-    const bgUrl = imageBase + 'logo-carrefour.png';
+    const imageBase = './images/';
 
-    // Crear bloques predefinidos
+    // Crear 10 bloques con nombre fijo 'nombre1'..'nombre10'
     for (let i = 1; i <= 10; i++) {
       const nombreDef = `nombre${i}`;
       const div = document.createElement('div');
@@ -50,51 +48,51 @@
         </label>
         <div class="preview-container">
           <img class="preview" src="${imageBase}${nombreDef}.png" alt="Vista previa">
-          <img class="logo" src="${bgUrl}" alt="Logo">
         </div>`;
       container.appendChild(div);
     }
 
-    // Toggle bloque
+    // Manejar toggle de inclusión
     container.querySelectorAll('.item').forEach(item => {
       const chk = item.querySelector('.includeItem');
-      chk.addEventListener('change', () => item.style.opacity = chk.checked ? '1' : '0.3');
+      chk.addEventListener('change', () => {
+        item.style.opacity = chk.checked ? '1' : '0.3';
+      });
     });
 
-    // Convertir URL a DataURL
+    // Convierte una URL a DataURL
     async function toDataURL(url) {
-      const res = await fetch(url).catch(() => null);
-      if (!res) return null;
-      const blob = await res.blob();
-      return new Promise(res => {
-        const reader = new FileReader();
-        reader.onload = e => res(e.target.result);
-        reader.readAsDataURL(blob);
-      });
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        return new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target.result);
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return null;
+      }
     }
 
     document.getElementById('btnGenerar').addEventListener('click', async () => {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({unit:'pt',format:'letter'});
-      const allItems = Array.from(document.querySelectorAll('.item'));
-      const items = allItems.filter(it => it.querySelector('.includeItem').checked);
+      const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+      const items = Array.from(document.querySelectorAll('.item')).filter(item => item.querySelector('.includeItem').checked);
 
-      const [bgData, logoData] = await Promise.all([
-        toDataURL(bgUrl), toDataURL(bgUrl)
-      ]);
-
-      const images = await Promise.all(items.map(it => {
-        const name = it.querySelector('.nombre').value.trim();
-        return toDataURL(name ? `${imageBase}${name}.png` : null);
+      // Carga imágenes según el nombre de cada bloque
+      const images = await Promise.all(items.map(item => {
+        const name = item.querySelector('.nombre').value.trim();
+        return name ? toDataURL(`${imageBase}${name}.png`) : Promise.resolve(null);
       }));
 
       const perPage = 6, cols = 3, rows = 2;
-      const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
       const bw = (pw - 80) / cols, bh = (ph - 100) / rows;
 
       items.forEach((item, idx) => {
         if (idx > 0 && idx % perPage === 0) doc.addPage();
-        if (idx % perPage === 0 && bgData) doc.addImage(bgData,'PNG', pw-100-40, 40, 100, 100);
 
         const ip = idx % perPage;
         const col = ip % cols;
@@ -104,7 +102,7 @@
         let y = y0;
 
         const tipo = item.querySelector('.plantilla').value;
-        const nombre = item.querySelector('.nombre').value || '(sin nombre)';
+        const nombre = item.querySelector('.nombre').value;
         const imgData = images[idx];
 
         doc.setFontSize(12);
@@ -118,10 +116,6 @@
           const sz = Math.min(bw - 20, bh - 40);
           const fmt = imgData.startsWith('data:image/png') ? 'PNG' : 'JPEG';
           doc.addImage(imgData, fmt, x, y, sz, sz);
-          if (logoData) {
-            const lsz = sz * 0.2;
-            doc.addImage(logoData, 'PNG', x + 5, y + 5, lsz, lsz);
-          }
         }
       });
 
@@ -130,3 +124,4 @@
   </script>
 </body>
 </html>
+

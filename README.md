@@ -16,7 +16,7 @@
     .preview-container{margin-top:6px}
     .preview-container img{width:100%;border:1px solid #ddd}
     .sms-row{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:4px;margin-bottom:4px}
-    #addForm{display:none;border:1px solid #007bff;padding:8px;margin-bottom:15px;background:#f2fef2}
+    #addForm{display:none;border:1px solid #007bff;padding:8px;margin-top:15px;background:#f2fef2}
     #addForm h2{font-size:14px;margin:0 0 6px;text-align:center}
     #bottomButtons{text-align:center;margin:20px 0}
     button{padding:6px 14px;font-size:13px;cursor:pointer}
@@ -33,6 +33,8 @@
     <input type="text" id="nombreTienda" placeholder="Introduce nombre de tienda">
   </div>
 
+  <div id="inputs"></div>
+
   <!-- Formulario emergente para añadir nuevos elementos -->
   <div id="addForm">
     <h2>Nuevo elemento</h2>
@@ -45,11 +47,9 @@
     </label>
     <div id="formRows"></div>
     <label>Descripción:<input type="text" id="formDescripcion" placeholder="Descripción del elemento"></label>
-    <label>Nombre de imagen:<input type="text" id="formNombreImagen" placeholder="nombre1, nombre2..."></label>
+    <label>Nombre de imagen:<input type="file" id="formNombreImagenFile" accept="image/*" capture="environment"></label>
     <button id="btnAddElem">Agregar al listado</button>
   </div>
-
-  <div id="inputs"></div>
 
   <div id="bottomButtons">
     <button id="btnToggleForm">➕ Añadir elemento</button>
@@ -58,14 +58,13 @@
 
 <script>
 const tipos=['Cross','Cabecera','Esfera o Exposicion Especial'];
-const imageBase='./';
 const container=document.getElementById('inputs');
 
 for(let i=1;i<=10;i++){
   container.appendChild(makePreviewBlock(i,`nombre${i}`));
 }
 
-function makePreviewBlock(num,fileName){
+function makePreviewBlock(num,fileName,imgDataURL=null){
   const div=document.createElement('div');
   div.className='item';
   div.innerHTML=`<h3 style="color:#27ae60;font-weight:bold;font-size:16px;">🎯 OFERTA TOP ${num}</h3>
@@ -73,7 +72,7 @@ function makePreviewBlock(num,fileName){
     <label>Tipo:<select class="plantilla">${tipos.map(t=>`<option>${t}</option>`).join('')}</select></label>
     <input type="hidden" class="nombre" value="${fileName}">
     <label>Descripción:<input type="text" class="descripcion" placeholder="Añade texto libre"></label>
-    <div class="preview-container"><img class="preview" src="${imageBase}${fileName}.png" alt="prev"></div>`;
+    <div class="preview-container"><img class="preview" src="${imgDataURL || `./${fileName}.png`}" alt="prev"></div>`;
   const chk=div.querySelector('.includeItem');
   chk.addEventListener('change',()=>{div.style.opacity=chk.checked?'1':'0.3'});
   return div;
@@ -87,29 +86,39 @@ for(let i=1;i<=6;i++){
   formRows.appendChild(row);
 }
 
-document.getElementById('btnToggleForm').onclick=()=>{form.style.display=form.style.display==='block'?'none':'block'};
+document.getElementById('btnToggleForm').onclick=()=>{
+  form.style.display=form.style.display==='block'?'none':'block';
+  if(form.style.display==='block') form.scrollIntoView({behavior:'smooth', block:'end'});
+};
 
 document.getElementById('btnAddElem').onclick=()=>{
   const tipo=document.getElementById('formTipo').value;
   const descripcion=document.getElementById('formDescripcion').value.trim();
-  const nombreImagen=document.getElementById('formNombreImagen').value.trim();
-  const rows=[...formRows.querySelectorAll('.sms-row')].map(r=>{const [sms,desc,off]=[...r.children].map(i=>i.value.trim());return{sms,desc,off}});
-  const idx=container.children.length+1;
-  const div=document.createElement('div');div.className='item';
-  div.innerHTML=`<h3 style="color:#27ae60;font-weight:bold;font-size:16px;">🎯 OFERTA EXTRA ${idx}</h3>
-    <label><input type="checkbox" class="includeItem" checked> Incluir</label>
-    <label>Tipo:<input readonly value="${tipo}"></label>
-    <input type="hidden" class="nombre" value="${nombreImagen}">
-    <label>Descripción:<input type="text" class="descripcion" value="${descripcion}" placeholder="Añade texto libre"></label>
-    <div class="preview-container"><img class="preview" src="${nombreImagen?`${imageBase}${nombreImagen}.png`:''}" alt="prev"></div>`+
-    rows.map(r=>`<div class="sms-row"><input readonly value="${r.sms}"><input readonly value="${r.desc}"><input readonly value="${r.off}"></div>`).join('');
-  const chk=div.querySelector('.includeItem');
-  chk.addEventListener('change',()=>{div.style.opacity=chk.checked?'1':'0.3'});
-  container.appendChild(div);
-  form.style.display='none';
+  const fileInput=document.getElementById('formNombreImagenFile');
+  const file=fileInput.files[0];
+  if(!file) return alert("Por favor, selecciona una imagen");
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const imgDataURL=reader.result;
+    const rows=[...formRows.querySelectorAll('.sms-row')].map(r=>{const [sms,desc,off]=[...r.children].map(i=>i.value.trim());return{sms,desc,off}});
+    const idx=container.children.length+1;
+    const div=document.createElement('div');div.className='item';
+    div.innerHTML=`<h3 style="color:#27ae60;font-weight:bold;font-size:16px;">🎯 OFERTA EXTRA ${idx}</h3>
+      <label><input type="checkbox" class="includeItem" checked> Incluir</label>
+      <label>Tipo:<input readonly value="${tipo}"></label>
+      <input type="hidden" class="nombre" value="">
+      <input type="hidden" class="imgData" value="${imgDataURL}">
+      <label>Descripción:<input type="text" class="descripcion" value="${descripcion}" placeholder="Añade texto libre"></label>
+      <div class="preview-container"><img class="preview" src="${imgDataURL}" alt="prev"></div>`+
+      rows.map(r=>`<div class="sms-row"><input readonly value="${r.sms}"><input readonly value="${r.desc}"><input readonly value="${r.off}"></div>`).join('');
+    const chk=div.querySelector('.includeItem');
+    chk.addEventListener('change',()=>{div.style.opacity=chk.checked?'1':'0.3'});
+    container.appendChild(div);
+    form.style.display='none';
+    fileInput.value='';
+  };
+  reader.readAsDataURL(file);
 };
-
-function getImageData(url){return new Promise(res=>{const img=new Image();img.crossOrigin='anonymous';img.src=url;img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').drawImage(img,0,0);res(c.toDataURL('image/png'));};img.onerror=()=>res(null);});}
 
 document.getElementById('btnGenerar').addEventListener('click',async()=>{
   const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'pt',format:'letter'});
@@ -127,8 +136,8 @@ document.getElementById('btnGenerar').addEventListener('click',async()=>{
     doc.setFontSize(14);doc.text(item.querySelector('h3').textContent,x,y);y+=18;
     const tipo=item.querySelector('select')?item.querySelector('select').value:item.querySelector('input[readonly]').value;
     doc.setFontSize(12);doc.text(`Tipo: ${tipo}`,x,y);y+=16;
-    const imgName=item.querySelector('.nombre')?.value;
-    if(imgName){const imgDat=await getImageData(`${imageBase}${imgName}.png`);if(imgDat){const sz=Math.min(bw-20,bh-60);doc.addImage(imgDat,'PNG',x,y,sz,sz);y+=sz+10;}}
+    const imgData=item.querySelector('.imgData')?.value;
+    if(imgData){const sz=Math.min(bw-20,bh-60);doc.addImage(imgData,'PNG',x,y,sz,sz);y+=sz+10;}
     const desc=item.querySelector('.descripcion');if(desc){const d=desc.value.trim();if(d){doc.text(d,x,y);y+=14;}}
     item.querySelectorAll('.sms-row').forEach(r=>{const vals=[...r.children].map(i=>i.value||i.textContent);if(vals.some(v=>v)){doc.text(vals.join(' - '),x,y);y+=14;}});
     count++;

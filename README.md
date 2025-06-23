@@ -91,7 +91,7 @@ document.getElementById('btnAddElem').onclick=()=>{
   const div=document.createElement('div');div.className='item';
   div.innerHTML=`<h3 style="color:#27ae60;font-weight:bold;font-size:16px;">🎯 OFERTA EXTRA ${idx}</h3><label>Tipo:<input readonly value="${tipo}"></label>`+
     rows.map(r=>`<div class="sms-row"><input readonly value="${r.sms}"><input readonly value="${r.desc}"><input readonly value="${r.off}"></div>`).join('');
-  container.appendChild(div);
+  container.append(div); // <-- Se asegura que se añade al final visualmente
   form.style.display='none';
 };
 

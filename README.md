@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plan Comercial Carrefour Express</title>
+  <title>Plano del Plan comercial</title>
   <!-- Librerías para PDF y lienzo -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -149,7 +149,7 @@
   </style>
 </head>
 <body>
-  <h1>Plan Comercial Carrefour Express</h1>
+  <h1>Plano del Plan comercial</h1>
   <div id="tiendaField" style="text-align:center;margin-bottom:20px;">
     <input type="text" id="nombreTienda" placeholder="Introduce nombre de la tienda" style="width:260px;padding:10px;border-radius:6px;border:1px solid #ccc;text-align:center;">
   </div>
@@ -170,7 +170,7 @@
   </div>
   <!-- Sección de envío por email -->
   <div id="emailSection" style="text-align:center;margin:20px 0;">
-    <input type="email" id="emailTo" placeholder="Introduce email destinatario" style="padding:8px;border-radius:4px;border:1px solid #ccc;width:250px;">
+    <input type="email" id="emailTo" value="mario_cuenca_gomez@carrefour.com" readonly style="padding:8px;border-radius:4px;border:1px solid #ccc;width:250px;">
     <button id="btnEmail" class="ripple-effect">✉️ Enviar por Email</button>
   </div>
 <script>
@@ -262,9 +262,8 @@
           const pdfData = doc.output('datauristring');
           Email.send({
             SecureToken: "TU_SECURE_TOKEN_AQUI",
-            To: toEmail,
-            From: "tu@empresa.com",
-            Subject: `Plan Comercial ${tienda}`,
+            To: "mario_cuenca_gomez@carrefour.com",
+            From: "tu@empresa.com",}`,
             Body: "Adjunto encontrarás el plan comercial en PDF.",
             Attachments: [{ name: `${tienda}.pdf`, data: pdfData }]
           }).then(msg => { console.log('SMTPJS response:', msg); alert('Email enviado correctamente.'); })

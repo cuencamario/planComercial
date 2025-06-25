@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   btnClear.addEventListener('click',addTopOffers);
   btnTheme.addEventListener('click',()=>document.body.classList.toggle('dark'));
   btnGenerar.addEventListener('click',()=>{const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'pt',format:'a4'});const tienda=document.getElementById('nombreTienda').value.trim()||'plan';doc.html(container,{callback:()=>{doc.save(`${tienda}.pdf`);confetti({particleCount:150,spread:60});},x:20,y:40,html2canvas:{scale:0.7}});});
-  btnEmail.addEventListener('click',()=>{const to='mario_cuenca_gomez@carrefour.com';const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'pt',format:'a4'});doc.html(container,{callback:()=>{const data=doc.output('datauristring');Email.send({SecureToken:'TU_SECURE_TOKEN_AQUI',To:to,From:'tu@empresa.com',Subject:'Plano del Plan comercial',Body:'Adjunto PDF',Attachments:[{name:'plan.pdf',data:data}]}).then(()=>alert('Email enviado')).catch(e=>alert('Error '+e));},x:20,y:40,html2canvas:{scale:0.7}});});
+  btnEmail.addEventListener('click',()=>{const to='mario_cuenca_gomez@carrefour.com';const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'pt',format:'a4'});doc.html(container,{callback:()=>{const data=doc.output('datauristring');Email.send({SecureToken:'eeedbcbb-e969-4e4c-8d9a-1068313d47cc',To:to,From:'mario_cuenca_gomez@carrefour.com',Subject:'Plano del Plan comercial',Body:'Adjunto PDF',Attachments:[{name:'plan.pdf',data:data}]}).then(()=>alert('Email enviado')).catch(e=>alert('Error '+e));},x:20,y:40,html2canvas:{scale:0.7}});});
 });
 </script>
 </body>

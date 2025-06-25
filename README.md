@@ -3,316 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plan Comercial Carrefour</title>
-  <!-- Importamos jsPDF para generar el PDF -->
+  <title>Plan Comercial Carrefour Express</title>
+  <!-- Librerías para PDF y lienzo -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- Importamos html2canvas para convertir el HTML en lienzo -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+  <!-- Celebración con confeti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <style>
-    /* Estilos base del body */
-    body {
-      font-family: Arial, sans-serif;
-      padding: 10px;
-      margin: 0;
-      background: #f5f5f5;
-    }
-
-    /* Título principal con fondo azul y sombra */
-    h1 {
-      font-size: 26px;
-      text-align: center;
-      background: #005aa7;
-      color: #fff;
-      padding: 16px 12px;
-      border-radius: 10px;
-      margin: 0 0 20px;
-      letter-spacing: 1px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
-      text-shadow: 1px 1px 2px rgba(0,0,0,.3);
-      position: relative;
-    }
-    /* Logo de Carrefour posicionado dentro del h1 */
-    h1::after {
-      content: '';
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Logo_Carrefour.svg/320px-Logo_Carrefour.svg.png');
-      background-size: contain;
-      background-repeat: no-repeat;
-      position: absolute;
-      right: 16px;
-      top: 10px;
-      width: 40px;
-      height: 40px;
-    }
-
-    /* Grid contenedor para los items dinámicos */
-    #inputs {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 10px;
-    }
-
-    /* Estilo de cada tarjeta de oferta */
-    .item {
-      border: 1px solid #ccc;
-      padding: 8px;
-      background: #fff;
-      transition: opacity .2s;
-      border-radius: 6px;
-      animation: fadeIn 0.4s ease;
-    }
-    .item h3 {
-      margin: 0 0 6px;
-      font-size: 15px;
-      color: #e4002b;
-    }
-    .item label {
-      display: block;
-      font-size: 12px;
-      margin: 4px 0;
-    }
-    .item select, .item input {
-      width: 100%;
-      padding: 4px;
-      font-size: 12px;
-      box-sizing: border-box;
-      border-radius: 4px;
-    }
-    /* Contenedor de previsualización de imagen */
-    .preview-container {
-      margin-top: 6px;
-    }
-    .preview-container img {
-      width: 100%;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-
-    /* Filas para SMS, descripción y oferta en el formulario */
-    .sms-row {
-      display: grid;
-      grid-template-columns: 1fr 1.5fr 1fr;
-      gap: 4px;
-      margin-bottom: 4px;
-    }
-
-    /* Formulario oculto inicialmente para añadir una oferta */
-    #addForm {
-      display: none;
-      border: 1px solid #007bff;
-      padding: 10px;
-      margin-top: 15px;
-      background: #eaf6ff;
-      border-radius: 8px;
-      animation: fadeIn 0.3s ease;
-    }
-    #addForm h2 {
-      font-size: 14px;
-      margin: 0 0 6px;
-      text-align: center;
-      color: #005aa7;
-    }
-    /* Botones inferiores */
-    #bottomButtons {
-      text-align: center;
-      margin: 20px 0;
-    }
-    button {
-      padding: 6px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-      background: #e4002b;
-      color: #fff;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #b3001f;
-    }
-
-    /* Campo para el nombre de la tienda */
-    #tiendaField {
-      text-align: center;
-      margin: 10px 0;
-    }
-    #tiendaField input {
-      width: 220px;
-      padding: 8px;
-      font-size: 15px;
-      text-align: center;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    /* Adaptación para pantallas pequeñas */
-    @media(max-width:768px) {
-      #inputs { grid-template-columns: 1fr; }
-    }
-
-    /* Animación de aparición */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    :root { --bg-light: linear-gradient(135deg, #eaf9ee, #009640); --bg-dark: #013d25; --text-light: #009640; --text-dark: #eaf9ee; --card-light: #fff; --card-dark: #0e3a27; }
+    body { font-family:'Segoe UI',sans-serif; margin:0; padding:10px; background:var(--bg-light); color:var(--text-light); min-height:100vh; transition:background .5s,color .5s; }
+    body.dark { background:var(--bg-dark); color:var(--text-dark); }
+    h1 { font-size:28px; text-align:center; background:rgba(255,255,255,.9); color:var(--text-light); padding:16px; border-radius:12px; margin:0 0 20px; position:relative; animation:bounceIn .8s ease; }
+    body.dark h1 { color:var(--text-dark); }
+    h1::after { content:''; background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Logo_Carrefour.svg/320px-Logo_Carrefour.svg.png'); background-size:contain; background-repeat:no-repeat; position:absolute; right:20px; top:12px; width:50px; height:50px; animation:rotateLogo 2s infinite linear; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+    @keyframes bounceIn { 0%{transform:scale(0);}60%{transform:scale(1.1);}100%{transform:scale(1);} }
+    @keyframes rotateLogo { from{transform:rotate(0deg);}to{transform:rotate(360deg);} }
+    #inputs { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+    .item { background:var(--card-light); border-radius:10px; padding:12px; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:transform .3s,box-shadow .3s,background .5s,opacity .3s; animation:fadeIn .5s ease; }
+    body.dark .item { background:var(--card-dark); }
+    .item:hover { transform:translateY(-6px); box-shadow:0 6px 18px rgba(0,0,0,.3); }
+    .item h3 { margin:0 0 8px; color:var(--text-light); }
+    body.dark .item h3 { color:var(--text-dark); }
+    .item.excluded { opacity:.3; }
+    .controls button { position:relative; overflow:hidden; padding:8px 16px; font-size:14px; border:none; border-radius:6px; background:#fff; color:var(--text-light); margin:4px; cursor:pointer; transition:background .3s,color .3s; }
+    body.dark .controls button { color:var(--text-dark); }
+    .controls button:hover { background:var(--text-light); color:#fff; }
+    .controls button.dark-toggle:hover { background:var(--text-dark); }
+    button.ripple-effect:after { content:''; position:absolute; background:rgba(255,255,255,.5); border-radius:50%; transform:scale(0); opacity:0; transition:transform .5s,opacity 1s; }
+    button.ripple-effect:active:after { width:200px;height:200px;top:calc(50% - 100px);left:calc(50% - 100px); transform:scale(1); opacity:1; transition:0s; }
+    @media(max-width:768px){ #inputs{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
-  <!-- Título de la página -->
-  <h1>Plan Comercial Carrefour</h1>
-
-  <!-- Campo para introducir el nombre de la tienda -->
-  <div id="tiendaField">
-    <label for="nombreTienda"><strong>Nombre de la tienda:</strong></label><br>
-    <input type="text" id="nombreTienda" placeholder="Introduce nombre de la tienda">
+  <h1>Plan Comercial Carrefour Express</h1>
+  <div id="tiendaField" style="text-align:center;margin-bottom:20px;">
+    <input type="text" id="nombreTienda" placeholder="Introduce nombre de la tienda" style="width:260px;padding:10px;border-radius:6px;border:1px solid #ccc;text-align:center;">
   </div>
-
-  <!-- Contenedor donde se insertan dinámicamente las ofertas -->
   <div id="inputs"></div>
-
-  <!-- Formulario para añadir una nueva oferta -->
-  <div id="addForm">
-    <h2>Nuevo elemento</h2>
-    <label>Tipo:
-      <select id="formTipo">
-        <option>Cross</option>
-        <option>Cabecera</option>
-        <option>Esfera </option>
-        <option>Exposición Especial</option>
-      </select>
-    </label>
-    <!-- Aquí se generan las filas de SMS/descripción/oferta -->
+  <div id="addForm" style="display:none;background:rgba(255,255,255,.9);padding:12px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);margin:12px 0;">
+    <h2 style="text-align:center;color:var(--text-light);">➕ Nueva Oferta</h2>
+    <label>Tipo:<select id="formTipo"><option>Cross</option><option>Cabecera</option><option>Esfera</option><option>Exposición Especial</option></select></label>
     <div id="formRows"></div>
-    <label>Descripción:
-      <input type="text" id="formDescripcion" placeholder="Descripción del elemento">
-    </label>
-    <label>Imagen (opcional):
-      <input type="file" id="formImagen" accept="image/*">
-    </label>
-    <button id="btnAddElem">Agregar al listado</button>
+    <label>Descripción:<input type="text" id="formDescripcion" placeholder="Descripción"></label>
+    <label>Imagen:<input type="file" id="formImagen" accept="image/*"></label>
+    <button id="btnAddElem" class="ripple-effect">Agregar</button>
   </div>
-
-  <!-- Botones para mostrar el formulario y generar el PDF -->
-  <div id="bottomButtons">
-    <button id="btnToggleForm">➕ Añadir Oferta</button>
-    <button id="btnGenerar">Crear PDF</button>
+  <div class="controls" style="text-align:center;margin:20px 0;">
+    <button id="btnToggleForm" class="ripple-effect">➕ Añadir Oferta</button>
+    <button id="btnGenerar" class="ripple-effect">🎉 Crear PDF</button>
+    <button id="btnClear" class="ripple-effect">🗑️ Limpiar Ofertas</button>
+    <button id="btnTheme" class="ripple-effect dark-toggle">🌙 Modo Oscuro</button>
   </div>
-
-  <script>
-    // Referencias a elementos clave del DOM
+  <!-- Sección de envío por email -->
+  <div id="emailSection" style="text-align:center; margin:20px 0;">
+    <input type="email" id="emailTo" placeholder="Introduce email destinatario" style="padding:8px; border-radius:4px; border:1px solid #ccc; width:250px;">
+    <button id="btnEmail" class="ripple-effect">✉️ Enviar por Email</button>
+  </div>
+  <!-- SMTPJS para envío de email -->
+<script src="https://smtpjs.com/v3/smtp.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('inputs');
     const addForm = document.getElementById('addForm');
     const formRows = document.getElementById('formRows');
     const toggleButton = document.getElementById('btnToggleForm');
     const btnAddElem = document.getElementById('btnAddElem');
-
-    // Generar automáticamente 6 filas para el formulario de SMS/descripción/oferta
+    const btnClear = document.getElementById('btnClear');
+    const btnTheme = document.getElementById('btnTheme');
+    const btnGenerar = document.getElementById('btnGenerar');
+    // Setup form rows
     for (let i = 1; i <= 6; i++) {
-      const row = document.createElement('div');
-      row.className = 'sms-row';
-      row.innerHTML = `
-        <input placeholder="SMS ${i}">
-        <input placeholder="Descripción artículo ${i}">
-        <input placeholder="Oferta ${i}">
-      `;
+      const row = document.createElement('div'); row.className = 'sms-row';
+      row.innerHTML = `<input placeholder="SMS ${i}"><input placeholder="Artículo ${i}"><input placeholder="Oferta ${i}">`;
       formRows.appendChild(row);
     }
-
-    // Mostrar u ocultar el formulario al clicar ➕ Añadir Oferta
-    toggleButton.onclick = () => {
-      addForm.style.display = addForm.style.display === 'block' ? 'none' : 'block';
-      if (addForm.style.display === 'block') {
-        addForm.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
-    };
-
-    // Al hacer clic en "Agregar al listado", creamos una nueva tarjeta .item
-    btnAddElem.onclick = () => {
-      const tipo = document.getElementById('formTipo').value;
-      const descripcion = document.getElementById('formDescripcion').value;
-      const imgFile = document.getElementById('formImagen').files[0];
-
-      // Recogemos los valores de cada fila de SMS/descripción/oferta
-      const rows = [...formRows.querySelectorAll('.sms-row')].map(r => {
-        const [sms, desc, off] = [...r.children].map(i => i.value.trim());
-        return { sms, desc, off };
+    // Function to attach include toggle
+    function setupInclude(div) {
+      const checkbox = div.querySelector('.includeItem');
+      checkbox.addEventListener('change', () => {
+        if (!checkbox.checked) div.classList.add('excluded');
+        else div.classList.remove('excluded');
       });
-
-      // Creamos el contenedor .item
-      const div = document.createElement('div');
-      div.className = 'item';
+    }
+    // Add top offers
+    function addTopOffers() {
+      container.innerHTML = '';
+      for (let i = 1; i <= 4; i++) {
+        const box = document.createElement('div'); box.className = 'item';
+        box.innerHTML = `
+          <h3>🎯 OFERTA TOP ${i}</h3>
+          <label><input type="checkbox" class="includeItem" checked> Incluir</label>
+          <label>Tipo:<select class="plantilla"><option>Cross</option><option>Cabecera</option><option>Esfera</option><option>Exposición Especial</option></select></label>
+          <label>Descripción:<input type="text" class="descripcion" placeholder="Añade texto libre"></label>
+          <div class="preview-container"><img src="./nombre${i}.png" alt="prev"></div>
+        `;
+        container.appendChild(box);
+        setupInclude(box);
+      }
+    }
+    addTopOffers();
+    // Toggle form
+    toggleButton.addEventListener('click', () => addForm.style.display = addForm.style.display==='block'?'none':'block');
+    // Add extra offer
+    btnAddElem.addEventListener('click', () => {
+      const tipo = document.getElementById('formTipo').value;
+      const desc = document.getElementById('formDescripcion').value;
+      const imgFile = document.getElementById('formImagen').files[0];
+      const div = document.createElement('div'); div.className = 'item';
       div.innerHTML = `
         <h3>🎯 OFERTA EXTRA</h3>
         <label><input type="checkbox" class="includeItem" checked> Incluir</label>
-        <label>Tipo: <input readonly value="${tipo}"></label>
-        <label>Descripción: <input type="text" value="${descripcion}" class="descripcion"></label>
-        <div class="preview-container"></div>
-        ${rows.map(r => `
-          <div class="sms-row">
-            <input readonly value="${r.sms}">
-            <input readonly value="${r.desc}">
-            <input readonly value="${r.off}">
-          </div>
-        `).join('')}
+        <p><strong>Tipo:</strong> ${tipo}</p>
+        <p>${desc}</p>
+        <div class='preview-container'></div>
       `;
-
-      // Si el usuario subió una imagen, la mostramos en la previsualización
       if (imgFile) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const imgTag = document.createElement('img');
-          imgTag.src = reader.result;
-          div.querySelector('.preview-container').appendChild(imgTag);
-        };
+        const reader = new FileReader(); reader.onload = () => { const img = document.createElement('img'); img.src = reader.result; div.querySelector('.preview-container').appendChild(img); };
         reader.readAsDataURL(imgFile);
       }
-
       container.appendChild(div);
-      // Ocultamos de nuevo el formulario para ahorrar espacio
-      addForm.style.display = 'none';
-    };
-
-    // Creamos 4 ofertas "TOP" preexistentes al cargar la página
-    for (let i = 1; i <= 4; i++) {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML = `
-        <h3>🎯 OFERTA TOP ${i}</h3>
-        <label><input type="checkbox" class="includeItem" checked> Incluir</label>
-        <label>Tipo:
-          <select class="plantilla">
-            <option>Cross</option>
-            <option>Cabecera</option>
-            <option>Esfera o Exposición Especial</option>
-          </select>
-        </label>
-        <label>Descripción:
-          <input type="text" class="descripcion" placeholder="Añade texto libre">
-        </label>
-        <div class="preview-container">
-          <img src="./nombre${i}.png" alt="prev">
-        </div>
-      `;
-      container.appendChild(div);
-    }
-
-    // Al hacer clic en "Crear PDF", generamos el documento y lo descargamos
-    document.getElementById('btnGenerar').onclick = () => {
+      setupInclude(div);
+      addForm.style.display='none';
+    });
+    // Clear offers
+    btnClear.addEventListener('click', addTopOffers);
+    // Toggle theme
+    btnTheme.addEventListener('click', () => document.body.classList.toggle('dark'));
+    // Generate PDF
+    btnGenerar.addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-      // Obtenemos el nombre de la tienda (o usamos "plan" si está vacío)
-      const tienda = document.getElementById('nombreTienda').value.trim() || 'plan';
-
-      // Convertimos el contenedor #inputs a canvas y lo añadimos al PDF
-      doc.html(container, {
-        callback: function (doc) {
-          doc.save(`${tienda}.pdf`); // Descarga automática del PDF
-        },
-        x: 20,
-        y: 40,
-        html2canvas: { scale: 0.6 }
+      const doc = new jsPDF({unit:'pt',format:'a4'});
+      const tienda = document.getElementById('nombreTienda').value.trim()||'Plan';
+      doc.html(container,{
+        callback:()=>{ doc.save(`${tienda}.pdf`); confetti({particleCount:150,spread:60}); },
+        x:20, y:40, html2canvas:{scale:0.7}
       });
-    };
+    });
+    // Enviar por Email
+    const btnEmail = document.getElementById('btnEmail');
+    btnEmail.addEventListener('click', () => {
+      const toEmail = document.getElementById('emailTo').value.trim();
+      if (!toEmail) { alert('Por favor, introduce un email válido.'); return; }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({unit:'pt',format:'a4'});
+      doc.html(container,{
+        callback:() => {
+          const tienda = document.getElementById('nombreTienda').value.trim()||'Plan';
+          // Obtener PDF como Data URI
+          const pdfData = doc.output('datauristring');
+          // Enviar correo con SMTPJS
+          Email.send({
+            // **Obtén tu SecureToken:** ve a https://smtpjs.com, haz click en "Get SecureToken", copia el valor generado aquí.
+            SecureToken: "6c314315-fba5-49ff-b46a-aa32c0a3abf4",
+            To: toEmail,
+            // *** Reemplaza con el correo remitente autorizado en SMTPJS ***
+            From: "tu@carrefour.com",
+            Subject: `Plano Plan Comercial ${tienda}`,
+            Body: "Adjunto encontrarás el Plano de pla comercial en PDF.",
+            Attachments: [{
+              name: `${tienda}.pdf`, data: pdfData
+            }]
+          }).then(message=>alert("Email enviado correctamente."))
+            .catch(err=>alert("Error al enviar email: " + err));
+        },
+        x:20, y:40, html2canvas:{scale:0.7}
+      });
+    });
+  });
+  </script>
+      const tienda = document.getElementById('nombreTienda').value.trim()||'Plan';
+      doc.html(container,{callback:()=>{doc.save(`${tienda}.pdf`);confetti({particleCount:150,spread:60});},x:20,y:40,html2canvas:{scale:0.7}});
+    });
+  });
   </script>
 </body>
 </html>

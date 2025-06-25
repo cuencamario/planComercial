@@ -51,7 +51,7 @@
   </style>
 </head>
 <body>
-  <h1><img src="carrefourespress.png">Plano del Plan comercial</h1>
+  <h1><img src="carrefourespress">Plano del Plan comercial</h1>
   <div id="tiendaField"><input type="text" id="nombreTienda" placeholder="Introduce nombre de la tienda"></div>
   <div id="inputs"></div>
   <div id="addForm" style="display:none; background:rgba(255,255,255,.9); padding:12px; border-radius:8px;">

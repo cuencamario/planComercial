@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plan Comercial Carrefour</title>
+  <!-- Librerías necesarias -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -170,6 +172,7 @@
     const toggleButton = document.getElementById('btnToggleForm');
     const btnAddElem = document.getElementById('btnAddElem');
 
+    // Generar filas para el formulario
     for (let i = 1; i <= 6; i++) {
       const row = document.createElement('div');
       row.className = 'sms-row';
@@ -181,6 +184,7 @@
       formRows.appendChild(row);
     }
 
+    // Toggle form
     toggleButton.onclick = () => {
       addForm.style.display = addForm.style.display === 'block' ? 'none' : 'block';
       if (addForm.style.display === 'block') {
@@ -188,6 +192,7 @@
       }
     };
 
+    // Añadir elemento dinámico
     btnAddElem.onclick = () => {
       const tipo = document.getElementById('formTipo').value;
       const descripcion = document.getElementById('formDescripcion').value;
@@ -228,7 +233,8 @@
       addForm.style.display = 'none';
     };
 
-    for (let i = 1; i <= 20; i++) {
+    // Elementos preexistentes
+    for (let i = 1; i <= 4; i++) {
       const div = document.createElement('div');
       div.className = 'item';
       div.innerHTML = `
@@ -250,6 +256,22 @@
       `;
       container.appendChild(div);
     }
+
+    // Generar PDF al pulsar el botón
+    document.getElementById('btnGenerar').onclick = () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const tienda = document.getElementById('nombreTienda').value.trim() || 'plan';
+
+      doc.html(container, {
+        callback: function (doc) {
+          doc.save(`${tienda}.pdf`);
+        },
+        x: 20,
+        y: 40,
+        html2canvas: { scale: 0.6 }
+      });
+    };
   </script>
 </body>
 </html>

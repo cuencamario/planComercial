@@ -9,30 +9,143 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Celebración con confeti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <!-- SMTPJS para envío de email -->
+  <script src="https://smtpjs.com/v3/smtp.js"></script>
   <style>
-    :root { --bg-light: linear-gradient(135deg, #eaf9ee, #009640); --bg-dark: #013d25; --text-light: #009640; --text-dark: #eaf9ee; --card-light: #fff; --card-dark: #0e3a27; }
-    body { font-family:'Segoe UI',sans-serif; margin:0; padding:10px; background:var(--bg-light); color:var(--text-light); min-height:100vh; transition:background .5s,color .5s; }
-    body.dark { background:var(--bg-dark); color:var(--text-dark); }
-    h1 { font-size:28px; text-align:center; background:rgba(255,255,255,.9); color:var(--text-light); padding:16px; border-radius:12px; margin:0 0 20px; position:relative; animation:bounceIn .8s ease; }
-    body.dark h1 { color:var(--text-dark); }
-    h1::after { content:''; background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Logo_Carrefour.svg/320px-Logo_Carrefour.svg.png'); background-size:contain; background-repeat:no-repeat; position:absolute; right:20px; top:12px; width:50px; height:50px; animation:rotateLogo 2s infinite linear; }
+    :root {
+      --bg-light: linear-gradient(135deg, #eaf9ee, #009640);
+      --bg-dark: #013d25;
+      --text-light: #009640;
+      --text-dark: #eaf9ee;
+      --card-light: #fff;
+      --card-dark: #0e3a27;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: var(--bg-light);
+      color: var(--text-light);
+      min-height: 100vh;
+      transition: background .5s, color .5s;
+    }
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+    /* Aseguramos que textos y inputs cambien de color en modo oscuro */
+    body.dark, body.dark h1, body.dark p, body.dark label {
+      color: var(--text-dark);
+    }
+    body.dark input, body.dark select, body.dark .sms-row input {
+      background: #333;
+      color: var(--text-dark);
+      border-color: #555;
+    }
+    h1 {
+      font-size: 28px;
+      text-align: center;
+      background: rgba(255,255,255,.9);
+      color: var(--text-light);
+      padding: 16px;
+      border-radius: 12px;
+      margin: 0 0 20px;
+      position: relative;
+      animation: bounceIn .8s ease;
+    }
+    body.dark h1 {
+      background: rgba(0,0,0,.5);
+      color: var(--text-dark);
+    }
+    h1::after {
+      content: '';
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Logo_Carrefour.svg/320px-Logo_Carrefour.svg.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      position: absolute;
+      right: 20px;
+      top: 12px;
+      width: 50px;
+      height: 50px;
+      animation: rotateLogo 2s infinite linear;
+    }
     @keyframes fadeIn { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
     @keyframes bounceIn { 0%{transform:scale(0);}60%{transform:scale(1.1);}100%{transform:scale(1);} }
     @keyframes rotateLogo { from{transform:rotate(0deg);}to{transform:rotate(360deg);} }
-    #inputs { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
-    .item { background:var(--card-light); border-radius:10px; padding:12px; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:transform .3s,box-shadow .3s,background .5s,opacity .3s; animation:fadeIn .5s ease; }
-    body.dark .item { background:var(--card-dark); }
-    .item:hover { transform:translateY(-6px); box-shadow:0 6px 18px rgba(0,0,0,.3); }
-    .item h3 { margin:0 0 8px; color:var(--text-light); }
-    body.dark .item h3 { color:var(--text-dark); }
-    .item.excluded { opacity:.3; }
-    .controls button { position:relative; overflow:hidden; padding:8px 16px; font-size:14px; border:none; border-radius:6px; background:#fff; color:var(--text-light); margin:4px; cursor:pointer; transition:background .3s,color .3s; }
-    body.dark .controls button { color:var(--text-dark); }
-    .controls button:hover { background:var(--text-light); color:#fff; }
-    .controls button.dark-toggle:hover { background:var(--text-dark); }
-    button.ripple-effect:after { content:''; position:absolute; background:rgba(255,255,255,.5); border-radius:50%; transform:scale(0); opacity:0; transition:transform .5s,opacity 1s; }
-    button.ripple-effect:active:after { width:200px;height:200px;top:calc(50% - 100px);left:calc(50% - 100px); transform:scale(1); opacity:1; transition:0s; }
-    @media(max-width:768px){ #inputs{grid-template-columns:1fr;} }
+    #inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 14px;
+    }
+    .item {
+      background: var(--card-light);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2);
+      transition: transform .3s, box-shadow .3s, background .5s, opacity .3s;
+      animation: fadeIn .5s ease;
+    }
+    body.dark .item {
+      background: var(--card-dark);
+    }
+    .item:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 6px 18px rgba(0,0,0,.3);
+    }
+    .item h3 {
+      margin: 0 0 8px;
+      color: var(--text-light);
+    }
+    body.dark .item h3 {
+      color: var(--text-dark);
+    }
+    .item.excluded {
+      opacity: .3;
+    }
+    .controls button {
+      position: relative;
+      overflow: hidden;
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text-light);
+      margin: 4px;
+      cursor: pointer;
+      transition: background .3s, color .3s;
+    }
+    body.dark .controls button {
+      color: var(--text-dark);
+    }
+    .controls button:hover {
+      background: var(--text-light);
+      color: #fff;
+    }
+    .controls button.dark-toggle:hover {
+      background: var(--text-dark);
+    }
+    button.ripple-effect:after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,.5);
+      border-radius: 50%;
+      transform: scale(0);
+      opacity: 0;
+      transition: transform .5s, opacity 1s;
+    }
+    button.ripple-effect:active:after {
+      width: 200px;
+      height: 200px;
+      top: calc(50% - 100px);
+      left: calc(50% - 100px);
+      transform: scale(1);
+      opacity: 1;
+      transition: 0s;
+    }
+    @media(max-width:768px) {
+      #inputs { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -56,12 +169,10 @@
     <button id="btnTheme" class="ripple-effect dark-toggle">🌙 Modo Oscuro</button>
   </div>
   <!-- Sección de envío por email -->
-  <div id="emailSection" style="text-align:center; margin:20px 0;">
-    <input type="email" id="emailTo" placeholder="Introduce email destinatario" style="padding:8px; border-radius:4px; border:1px solid #ccc; width:250px;">
+  <div id="emailSection" style="text-align:center;margin:20px 0;">
+    <input type="email" id="emailTo" placeholder="Introduce email destinatario" style="padding:8px;border-radius:4px;border:1px solid #ccc;width:250px;">
     <button id="btnEmail" class="ripple-effect">✉️ Enviar por Email</button>
   </div>
-  <!-- SMTPJS para envío de email -->
-<script src="https://smtpjs.com/v3/smtp.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('inputs');
@@ -74,7 +185,8 @@
     const btnGenerar = document.getElementById('btnGenerar');
     // Setup form rows
     for (let i = 1; i <= 6; i++) {
-      const row = document.createElement('div'); row.className = 'sms-row';
+      const row = document.createElement('div');
+      row.className = 'sms-row';
       row.innerHTML = `<input placeholder="SMS ${i}"><input placeholder="Artículo ${i}"><input placeholder="Oferta ${i}">`;
       formRows.appendChild(row);
     }
@@ -88,9 +200,10 @@
     }
     // Add top offers
     function addTopOffers() {
-      container.innerHTML = '';
+      container.innerHTML = ''; 
       for (let i = 1; i <= 4; i++) {
-        const box = document.createElement('div'); box.className = 'item';
+        const box = document.createElement('div');
+        box.className = 'item';
         box.innerHTML = `
           <h3>🎯 OFERTA TOP ${i}</h3>
           <label><input type="checkbox" class="includeItem" checked> Incluir</label>
@@ -135,47 +248,30 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({unit:'pt',format:'a4'});
       const tienda = document.getElementById('nombreTienda').value.trim()||'Plan';
-      doc.html(container,{
-        callback:()=>{ doc.save(`${tienda}.pdf`); confetti({particleCount:150,spread:60}); },
-        x:20, y:40, html2canvas:{scale:0.7}
-      });
+      doc.html(container,{callback:()=>{doc.save(`${tienda}.pdf`);confetti({particleCount:150,spread:60});},x:20,y:40,html2canvas:{scale:0.7}});
     });
-    // Enviar por Email
+    // Send by Email
     const btnEmail = document.getElementById('btnEmail');
     btnEmail.addEventListener('click', () => {
       const toEmail = document.getElementById('emailTo').value.trim();
       if (!toEmail) { alert('Por favor, introduce un email válido.'); return; }
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({unit:'pt',format:'a4'});
-      doc.html(container,{
-        callback:() => {
+      doc.html(container,{callback:() => {
           const tienda = document.getElementById('nombreTienda').value.trim()||'Plan';
-          // Obtener PDF como Data URI
           const pdfData = doc.output('datauristring');
-          // Enviar correo con SMTPJS
           Email.send({
-            // **Obtén tu SecureToken:** ve a https://smtpjs.com, haz click en "Get SecureToken", copia el valor generado aquí.
-            SecureToken: "6c314315-fba5-49ff-b46a-aa32c0a3abf4",
+            SecureToken: "TU_SECURE_TOKEN_AQUI",
             To: toEmail,
-            // *** Reemplaza con el correo remitente autorizado en SMTPJS ***
-            From: "tu@carrefour.com",
-            Subject: `Plano Plan Comercial ${tienda}`,
-            Body: "Adjunto encontrarás el Plano de pla comercial en PDF.",
-            Attachments: [{
-              name: `${tienda}.pdf`, data: pdfData
-            }]
-          }).then(message=>alert("Email enviado correctamente."))
-            .catch(err=>alert("Error al enviar email: " + err));
-        },
-        x:20, y:40, html2canvas:{scale:0.7}
-      });
+            From: "tu@empresa.com",
+            Subject: `Plan Comercial ${tienda}`,
+            Body: "Adjunto encontrarás el plan comercial en PDF.",
+            Attachments: [{ name: `${tienda}.pdf`, data: pdfData }]
+          }).then(msg => { console.log('SMTPJS response:', msg); alert('Email enviado correctamente.'); })
+            .catch(err => { console.error('Error SMTPJS:', err); alert('Error al enviar email. Revisa la consola.'); });
+        },x:20,y:40,html2canvas:{scale:0.7}});
     });
   });
-  </script>
-      const tienda = document.getElementById('nombreTienda').value.trim()||'Plan';
-      doc.html(container,{callback:()=>{doc.save(`${tienda}.pdf`);confetti({particleCount:150,spread:60});},x:20,y:40,html2canvas:{scale:0.7}});
-    });
-  });
-  </script>
+</script>
 </body>
 </html>
